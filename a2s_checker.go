@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/rumblefrog/go-a2s"
 )
@@ -118,13 +119,43 @@ func main() {
 	defer a2sClient.Close()
 
 	var counter uint32 = 0
+	var wasStopped bool = false
 
+	fmt.Printf("sleeping for %d seconds\n", CHECKER_INIT)
 	time.Sleep(time.Duration(CHECKER_INIT) * time.Second)
 
 	for {
+		var json types.ContainerJSON
+		var err error
+
+		json, err = cli.ContainerInspect(ctx, SRCDS_CONTAINER_NAME)
+		if err != nil {
+			if !wasStopped {
+				wasStopped = true
+				fmt.Fprintf(os.Stderr, "container with name '%s' does not exist\n", SRCDS_CONTAINER_NAME)
+			}
+			time.Sleep(time.Duration(CHECKER_POLLING_INTERVAL) * time.Second)
+			continue
+		} else if !json.State.Running {
+			if !wasStopped {
+				wasStopped = true
+				fmt.Printf("container with name '%s' is not running\n", SRCDS_CONTAINER_NAME)
+			}
+			time.Sleep(time.Duration(CHECKER_POLLING_INTERVAL) * time.Second)
+			continue
+		}
+
+		if wasStopped {
+			wasStopped = false
+			fmt.Printf("container with name '%s' is now running\n", SRCDS_CONTAINER_NAME)
+			counter = 0
+			fmt.Printf("sleeping for %d seconds\n", CHECKER_INIT)
+			time.Sleep(time.Duration(CHECKER_INIT) * time.Second)
+		}
+
 		time.Sleep(time.Duration(CHECKER_POLLING_INTERVAL) * time.Second)
 
-		_, err := a2sClient.QueryInfo()
+		_, err = a2sClient.QueryInfo()
 		if err != nil {
 			counter += CHECKER_POLLING_INTERVAL
 			fmt.Printf("restart counter: %d\n", counter)
@@ -137,7 +168,7 @@ func main() {
 		}
 
 		if counter >= CHECKER_TIMEOUT {
-			fmt.Printf("restarting the container '%s'", SRCDS_CONTAINER_NAME)
+			fmt.Printf("restarting the container '%s'\n", SRCDS_CONTAINER_NAME)
 
 			timeout := 10 * time.Second
 			err := cli.ContainerRestart(ctx, SRCDS_CONTAINER_NAME, &timeout)
@@ -152,6 +183,7 @@ func main() {
 
 			counter = 0
 
+			fmt.Printf("sleeping for %d seconds\n", CHECKER_INIT)
 			time.Sleep(time.Duration(CHECKER_INIT) * time.Second)
 		}
 	}
