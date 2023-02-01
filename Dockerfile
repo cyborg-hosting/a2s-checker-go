@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN go build -o /docker-a2s-check
+RUN go build -o /docker-a2s-checker
 
 ##
 ## Deploy
@@ -22,6 +22,6 @@ FROM gcr.io/distroless/base-debian10
 
 WORKDIR /
 
-COPY --from=build /docker-a2s-check /docker-a2s-check
+COPY --from=build /docker-a2s-checker /docker-a2s-checker
 
-ENTRYPOINT [ "/docker-a2s-check" ]
+ENTRYPOINT [ "/docker-a2s-checker" ]
