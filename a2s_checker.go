@@ -128,6 +128,7 @@ func main() {
 		if err != nil {
 			counter += CHECKER_POLLING_INTERVAL
 			fmt.Printf("restart counter: %d\n", counter)
+			fmt.Printf("error info: %s\n", err.Error())
 		} else {
 			if counter != 0 {
 				fmt.Printf("restart counter: %d\n", 0)
