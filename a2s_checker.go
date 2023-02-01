@@ -130,7 +130,7 @@ func main() {
 			fmt.Printf("restart counter: %d\n", counter)
 		} else {
 			if counter != 0 {
-				fmt.Printf("restart counter: %d\n", counter)
+				fmt.Printf("restart counter: %d\n", 0)
 			}
 			counter = 0
 		}
@@ -146,7 +146,7 @@ func main() {
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "restarting the container '%s' failed\n", SRCDS_CONTAINER_NAME)
 			} else {
-				fmt.Println("restarting succeeded")
+				fmt.Printf("restarting the container '%s' succeeded\n", SRCDS_CONTAINER_NAME)
 			}
 
 			counter = 0
