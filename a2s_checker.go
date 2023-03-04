@@ -120,6 +120,7 @@ func main() {
 
 	var counter uint32 = 0
 	var wasStopped bool = false
+	var checkerMultiplier uint32 = 1
 
 	fmt.Printf("sleeping for %d seconds\n", CHECKER_INIT)
 	time.Sleep(time.Duration(CHECKER_INIT) * time.Second)
@@ -160,11 +161,10 @@ func main() {
 			counter += CHECKER_POLLING_INTERVAL
 			fmt.Printf("restart counter: %d\n", counter)
 			fmt.Printf("error info: %s\n", err.Error())
-		} else {
-			if counter != 0 {
-				fmt.Printf("restart counter: %d\n", 0)
-			}
+		} else if counter != 0 {
+			fmt.Printf("restart counter: %d\n", 0)
 			counter = 0
+			checkerMultiplier = 1
 		}
 
 		if counter >= CHECKER_TIMEOUT {
@@ -183,8 +183,12 @@ func main() {
 
 			counter = 0
 
-			fmt.Printf("sleeping for %d seconds\n", CHECKER_INIT)
-			time.Sleep(time.Duration(CHECKER_INIT) * time.Second)
+			fmt.Printf("sleeping for %d seconds\n", CHECKER_INIT*checkerMultiplier)
+			time.Sleep(time.Duration(CHECKER_INIT*checkerMultiplier) * time.Second)
+
+			if checkerMultiplier < 8 {
+				checkerMultiplier *= 2
+			}
 		}
 	}
 }
