@@ -2,7 +2,7 @@
 ## Build
 ##
 
-FROM golang:1.19-buster AS build
+FROM golang:1.21-bookworm AS build
 
 WORKDIR /app
 
@@ -12,16 +12,16 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN go build -o /docker-a2s-checker
+RUN go build -o /a2s-checker
 
 ##
 ## Deploy
 ##
 
-FROM gcr.io/distroless/base-debian10
+FROM gcr.io/distroless/static
 
 WORKDIR /
 
-COPY --from=build /docker-a2s-checker /docker-a2s-checker
+COPY --from=build --chmod=755 /a2s-checker /a2s-checker
 
-ENTRYPOINT [ "/docker-a2s-checker" ]
+ENTRYPOINT [ "/a2s-checker" ]
